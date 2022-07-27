@@ -80,6 +80,10 @@ platforms:
       config: 
         install: acs.json
         benchmarks: acs.json
+    - name: ovn-winc
+      config:
+        install: ovn-winc.json  # TODO make ovn-winc.json
+        benchmarks: control-plane-winc.json
 
   baremetal: 
     build: dev
