@@ -24,6 +24,6 @@
     "openshift_prometheus_storage_size": "250Gi",
     "openshift_alertmanager_storage_class": "gp3-csi",
     "openshift_alertmanager_storage_size": "2Gi",
-    "openshift_ovn_ic": "true",
-    "openshift_cno_image": "quay.io/itssurya/dev-images:ic-scale-cno-v3"
+    "openshift_toggle_cno_patch": "true",
+    "openshift_cno_image": "quay.io/itssurya/dev-images:ic-cno-hack-v5"
  }
