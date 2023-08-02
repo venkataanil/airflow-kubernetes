@@ -1,6 +1,7 @@
 from os import environ
 
 from openshift_nightlies.util import var_loader, executor, constants
+from openshift_nightlies.tasks.index.status import StatusIndexer
 from openshift_nightlies.models.release import OpenshiftRelease
 from common.models.dag_config import DagConfig
 
@@ -65,7 +66,7 @@ class E2EBenchmarks():
                 "ORCHESTRATION_USER": self.config['provisioner_user'],
                 "ORCHESTRATION_HOST": self.config['provisioner_hostname']
             }
-        
+
         if self.release.platform == "rosa":
             self.rosa_creds = var_loader.get_secret("rosa_creds", deserialize_json=True)
             self.aws_creds = var_loader.get_secret("aws_creds", deserialize_json=True)
@@ -83,19 +84,32 @@ class E2EBenchmarks():
                 "OCM_TOKEN": self.ocm_creds['ocm_token']
             }
             self.install_vars = var_loader.build_task_vars(
-                release, task="install") 
-            if self.install_vars['rosa_hcp'] == "true":
-                cluster_name = release._generate_cluster_name()         
-                self.env = {
-                    **self.env,
-                    "THANOS_RECEIVER_URL": var_loader.get_secret("thanos_receiver_url"),
-                    "PROM_URL": var_loader.get_secret("thanos_querier_url"),
-                    "MGMT_CLUSTER_NAME": f"{self.install_vars['staging_mgmt_cluster_name']}.*",
-                    "SVC_CLUSTER_NAME": f"{self.install_vars['staging_svc_cluster_name']}.*",
-                    "HOSTED_CLUSTER_NS": f".*-{cluster_name}-{self.task_group}",
-                    "MGMT_KUBECONFIG_SECRET": f"{release.get_release_name()}-kubeconfig",
-                    **self._insert_kube_env()
-                }
+                release, task="install")
+
+        if self.release.platform == "rosahcp":
+            self.rosa_creds = var_loader.get_secret("rosa_creds", deserialize_json=True)
+            self.aws_creds = var_loader.get_secret("aws_creds", deserialize_json=True)
+            self.ocm_creds = var_loader.get_secret("ocm_creds", deserialize_json=True)
+            self.environment = self.vars["environment"] if "environment" in self.vars else "staging"
+            self.env = {
+                **self.env,
+                "ROSA_CLUSTER_NAME": release._generate_cluster_name(),
+                "ROSA_ENVIRONMENT": self.environment,
+                "ROSA_TOKEN": self.rosa_creds['rosa_token_'+self.environment],
+                "AWS_ACCESS_KEY_ID": self.aws_creds['aws_access_key_id'],
+                "AWS_SECRET_ACCESS_KEY": self.aws_creds['aws_secret_access_key'],
+                "AWS_DEFAULT_REGION": self.aws_creds['aws_region_for_openshift'],
+                "AWS_ACCOUNT_ID": self.aws_creds['aws_account_id'],
+                "OCM_TOKEN": self.ocm_creds['ocm_token']
+            }
+            self.install_vars = var_loader.build_task_vars(
+                release, task="install")
+            cluster_name = release._generate_cluster_name()
+            self.env = {
+                **self.env,
+                "MGMT_KUBECONFIG_SECRET": "staging-mgmt-cluster-kubeconfig",
+                **self._insert_kube_env()
+            }
 
         if self.release.platform == "hypershift":
             mgmt_cluster_name = release._generate_cluster_name()
@@ -111,7 +125,7 @@ class E2EBenchmarks():
 
     def get_benchmarks(self):
         benchmarks = self._get_benchmarks(self.vars["benchmarks"])
-        return benchmarks 
+        return benchmarks
 
     def _git_name(self):
         git_username = var_loader.get_git_user()
@@ -131,6 +145,9 @@ class E2EBenchmarks():
                 benchmarks[index] = self._get_benchmarks(benchmark['benchmarks'])
         return benchmarks
 
+    def _add_indexer(self, benchmark):
+        indexer = StatusIndexer(self.dag, self.dag_config, self.release, benchmark.task_id, task_group=self.task_group).get_index_task()
+        benchmark >> indexer
 
     def _get_benchmark(self, benchmark):
         env = {**self.env, **benchmark.get('env', {}), **{"ES_SERVER": var_loader.get_secret('elasticsearch'), "KUBEADMIN_PASSWORD": environ.get("KUBEADMIN_PASSWORD", "")}}
@@ -159,7 +176,7 @@ class E2EBenchmarks():
                 execution_timeout=timedelta(seconds=21600),
                 executor_config=self.exec_config
         )
-
+        self._add_indexer(task)
         return task
 
     # This Helper Injects Airflow environment variables into the task execution runtime
