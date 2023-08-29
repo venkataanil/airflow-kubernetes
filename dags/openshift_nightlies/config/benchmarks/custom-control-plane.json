@@ -1,0 +1,59 @@
+{
+    "benchmarks": [
+        {
+            "name": "scale-custom",
+            "workload": "scale-perf",
+            "command": "./run_scale_fromgit.sh",
+            "env": {
+                "SCALE": "50",
+                "METADATA_COLLECTION": "false",
+                "WORKLOAD_NODE_ROLE": "worker"
+            }
+        },
+        {
+            "name": "node-density",
+            "workload": "kube-burner",
+            "custom_cmd": "kube-burner ocp node-density --uuid=${UUID} --pods-per-node=245 --timeout=3h --pod-ready-threshold=20s --es-server=${ES_SERVER} --es-index=ripsaw-kube-burner --user-metadata=metadata.yml"
+        },
+        {
+            "name": "node-density-sleep",
+            "workload": "kube-burner",
+            "custom_cmd": "sleep 30m"
+        },
+        {
+            "name": "node-density-cni-60",
+            "workload": "kube-burner",
+            "custom_cmd": "kube-burner ocp node-density-cni --uuid=${UUID} --pods-per-node=60 --timeout=6h --es-server=${ES_SERVER} --es-index=ripsaw-kube-burner --user-metadata=metadata.yml"
+        },
+        {
+            "name": "node-density-cni60-sleep",
+            "workload": "kube-burner",
+            "custom_cmd": "sleep 30m"
+        },
+        {
+            "name": "node-density-cni-80",
+            "workload": "kube-burner",
+            "custom_cmd": "kube-burner ocp node-density-cni --uuid=${UUID} --pods-per-node=80 --timeout=8h --es-server=${ES_SERVER} --es-index=ripsaw-kube-burner --user-metadata=metadata.yml"
+        },
+        {
+            "name": "node-density-cni80-sleep",
+            "workload": "kube-burner",
+            "custom_cmd": "sleep 30m"
+        },
+        {
+            "name": "node-density-cni-120",
+            "workload": "kube-burner",
+            "custom_cmd": "kube-burner ocp node-density-cni --uuid=${UUID} --pods-per-node=120 --timeout=8h --es-server=${ES_SERVER} --es-index=ripsaw-kube-burner --user-metadata=metadata.yml"
+        },
+        {
+            "name": "node-density-cni120-sleep",
+            "workload": "kube-burner",
+            "custom_cmd": "sleep 30m"
+        },
+        {
+            "name": "node-density-cni-220",
+            "workload": "kube-burner",
+            "custom_cmd": "kube-burner ocp node-density-cni --uuid=${UUID} --pods-per-node=220 --timeout=8h --es-server=${ES_SERVER} --es-index=ripsaw-kube-burner --user-metadata=metadata.yml"
+        }
+    ]
+}
