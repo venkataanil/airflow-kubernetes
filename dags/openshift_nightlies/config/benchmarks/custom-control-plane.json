@@ -1,11 +1,11 @@
 {
     "benchmarks": [
         {
-            "name": "scale-24",
+            "name": "scale-custom",
             "workload": "scale-perf",
             "command": "./run_scale_fromgit.sh",
             "env": {
-                "SCALE": "24",
+                "SCALE": "50",
                 "METADATA_COLLECTION": "false",
                 "WORKLOAD_NODE_ROLE": "worker"
             }

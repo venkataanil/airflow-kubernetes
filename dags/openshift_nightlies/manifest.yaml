@@ -38,6 +38,11 @@ platforms:
       config: 
         install: ovn-small.json
         benchmarks: small-control-plane.json
+    - name: ovn-custom-cp
+      schedule: "0 12 * * 1"
+      config:
+        install: ovn-custom.json
+        benchmarks: custom-control-plane.json
     - name: ovn-medium-cp
       schedule: "0 12 * * 1"
       config: 
