@@ -53,6 +53,11 @@ platforms:
       config:
         install: ovn-dp-v2.json
         benchmarks: data-plane-v2.json
+    - name: ovn-data-plane
+      schedule: "0 12 * * 1"
+      config:
+        install: ovn-dp.json
+        benchmarks: data-plane.json
 
           # Removing old dp tests and ACS as we don't use them in the main dag
           #    - name: ovn-data-plane
