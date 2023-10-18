@@ -48,6 +48,11 @@ platforms:
       config: 
         install: ovn-large.json
         benchmarks: large-control-plane.json
+    - name: ovn-large500-cp
+      schedule: "0 12 15 * *"
+      config:
+        install: ovn-large.json
+        benchmarks: large-control-plane.json
     - name: ovn-data-plane-v2
       schedule: "0 12 * * 1"
       config:
